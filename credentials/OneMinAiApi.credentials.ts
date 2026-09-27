@@ -1,4 +1,10 @@
-import type { IAuthenticateGeneric, ICredentialType, INodeProperties } from 'n8n-workflow';
+import type {
+	IAuthenticateGeneric,
+	Icon,
+	ICredentialTestRequest,
+	ICredentialType,
+	INodeProperties,
+} from 'n8n-workflow';
 
 /**
  * Credentials for the 1min.AI API.
@@ -7,17 +13,20 @@ import type { IAuthenticateGeneric, ICredentialType, INodeProperties } from 'n8n
  * - Every documented endpoint example sends `API-KEY: <key>`; the API intro page additionally
  *   documents `Authorization: Bearer <key>`. Both styles are supported; `API-KEY` is the default.
  * - Base URL defaults to `https://api.1min.ai` and can be overridden for testing/proxy setups.
- *
- * Note: there is intentionally no `test` block. Every documented GET endpoint requires a known
- * record id and every POST has side effects, so an automatic credential test cannot be both
- * safe and reliable. See README → Assumptions.
+ *   The credential test below always targets the production URL (a test request cannot read
+ *   the baseUrl property); the 1min.AI community node itself honors the override.
  */
 export class OneMinAiApi implements ICredentialType {
 	name = 'oneMinAiApi';
 
 	displayName = '1min.AI API';
 
-	documentationUrl = 'oneMinAiApi';
+	icon: Icon = {
+		light: 'file:../icons/oneminai.svg',
+		dark: 'file:../icons/oneminai.svg',
+	};
+
+	documentationUrl = 'https://docs.1min.ai/docs/api/create-api-key';
 
 	properties: INodeProperties[] = [
 		{
@@ -74,6 +83,21 @@ export class OneMinAiApi implements ICredentialType {
 			headers: {
 				'API-KEY': '={{ $credentials.apiKey }}',
 			},
+		},
+	};
+
+	/**
+	 * Connectivity test: GET /api/results/{id} with a well-formed but unknown UUID.
+	 * Documented behavior (https://docs.1min.ai/docs/api/get-result): the endpoint responds
+	 * `200` with `{ "aiRecord": null }` for unknown ids — no side effects, and it only
+	 * succeeds when the API key is accepted. Every other documented endpoint either needs
+	 * a known record id or has side effects, so none of them are safe to auto-test.
+	 */
+	test: ICredentialTestRequest = {
+		request: {
+			baseURL: 'https://api.1min.ai',
+			url: '/api/results/00000000-0000-0000-0000-000000000000',
+			method: 'GET',
 		},
 	};
 }
