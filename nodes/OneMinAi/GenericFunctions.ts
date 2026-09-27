@@ -1,3 +1,4 @@
+import FormData from 'form-data';
 import { NodeApiError, NodeOperationError } from 'n8n-workflow';
 import type {
 	IDataObject,
@@ -5,6 +6,7 @@ import type {
 	IHttpRequestOptions,
 	ILoadOptionsFunctions,
 	INode,
+	JsonObject,
 } from 'n8n-workflow';
 
 /** Documented base URL (https://docs.1min.ai/docs/api/intro#base-url). */
@@ -89,22 +91,49 @@ function pickErrorMessage(candidate: unknown, depth = 0): string | undefined {
 	return undefined;
 }
 
-/** Wraps API failures so the 1min.AI error body (code + message) shows up in the n8n error UI. */
+/**
+ * Wraps API failures so the 1min.AI error body shows up in the n8n error UI.
+ * `NodeApiError` already extracts `response.data.message` / `response.data.error.message`
+ * (1min.AI's documented `{ success: false, error: { message } }` format) into the error
+ * description and status code into the message; the explicit description only covers
+ * shapes its heuristics miss.
+ */
 export function enrichApiError(node: INode, error: unknown): Error {
-	if (error instanceof NodeApiError) {
-		const body = (error as unknown as { body?: unknown }).body;
-		const message = pickErrorMessage(body);
-		if (message !== undefined) {
-			return new NodeApiError(node, error as unknown as IDataObject, {
-				description: message,
-			});
-		}
+	if (error instanceof NodeApiError || error instanceof NodeOperationError) {
 		return error;
 	}
 	if (error instanceof Error) {
-		return error;
+		const responseBody = asRecord(
+			(error as unknown as { response?: { data?: unknown } }).response?.data,
+		);
+		return new NodeApiError(node, error as unknown as JsonObject, {
+			description: responseBody ? pickErrorMessage(responseBody) : undefined,
+		});
 	}
 	return new Error(`1min.AI request failed: ${String(error)}`);
+}
+
+/** A single multipart field: either a plain string or a file with filename/content type. */
+export interface MultipartField {
+	value: Buffer | string;
+	options?: { filename?: string; contentType?: string };
+}
+
+/**
+ * Builds a multipart/form-data body for the Asset API (documented field name: `asset`).
+ * Uses the `form-data` package because n8n's httpRequest derives the multipart boundary
+ * headers from a FormData instance in the request body.
+ */
+export function buildMultipartFormData(fields: Record<string, MultipartField | string>): FormData {
+	const formData = new FormData();
+	for (const [name, field] of Object.entries(fields)) {
+		if (typeof field === 'string') {
+			formData.append(name, field);
+		} else {
+			formData.append(name, field.value, field.options ?? {});
+		}
+	}
+	return formData;
 }
 
 /**
@@ -120,7 +149,7 @@ export async function oneMinAiApiRequest(
 	method: ApiMethod,
 	endpoint: string,
 	body?: IDataObject,
-	extra: { formData?: unknown; headers?: Record<string, string> } = {},
+	extra: { formData?: FormData; headers?: Record<string, string> } = {},
 ): Promise<IDataObject> {
 	const credentials = await getCredentialsOrThrow(this);
 
@@ -134,9 +163,9 @@ export async function oneMinAiApiRequest(
 	};
 
 	if (extra.formData !== undefined) {
-		// Multipart upload (Asset API). Axios sets the multipart boundary itself, so no
-		// Content-Type header is sent in this case.
-		requestOptions.formData = extra.formData as IDataObject;
+		// Multipart upload (Asset API). n8n copies the multipart headers (including the
+		// boundary) from the FormData instance itself, so no Content-Type header is set here.
+		requestOptions.body = extra.formData;
 	} else if (body !== undefined) {
 		requestOptions.body = body;
 	}

@@ -30,7 +30,7 @@ export const chatFields: INodeProperties[] = [
 		],
 		default: 'prompt',
 		displayOptions: { show: { resource: ['chat'], operation: ['send'] } },
-		description: 'How to build the request body.',
+		description: 'How to build the request body',
 	},
 	{
 		displayName: 'Model',
@@ -50,7 +50,7 @@ export const chatFields: INodeProperties[] = [
 		required: true,
 		default: '',
 		displayOptions: { show: { resource: ['chat'], operation: ['send'], inputMode: ['prompt'] } },
-		description: "The user's message sent to the model.",
+		description: 'The user\'s message sent to the model',
 	},
 	{
 		displayName: 'Conversation ID',
@@ -86,24 +86,21 @@ export const chatFields: INodeProperties[] = [
 				name: 'webSearch',
 				type: 'boolean',
 				default: false,
-				description:
-					'Whether to ground the response with web search (promptObject.settings.webSearchSettings.webSearch).',
+				description: 'Whether to ground the response with web search (promptObject.settings.webSearchSettings.webSearch)',
 			},
 			{
 				displayName: 'Enable AI Memories',
 				name: 'withMemories',
 				type: 'boolean',
 				default: false,
-				description:
-					'Whether to enable AI memory across conversations (promptObject.settings.withMemories).',
+				description: 'Whether to enable AI memory across conversations (promptObject.settings.withMemories)',
 			},
 			{
 				displayName: 'Attachments JSON',
 				name: 'attachmentsJson',
 				type: 'json',
 				default: '{}',
-				description:
-					'File/image attachments, e.g. {"images": ["<asset key or url>"], "files": ["<asset id>"]}. Passed through as promptObject.attachments.',
+				description: 'File/image attachments, e.g. {"images": ["&lt;asset key or URL&gt;"], "files": ["&lt;asset ID&gt;"]}. Passed through as promptObject.attachments.',
 			},
 			{
 				displayName: 'Brand Voice ID',

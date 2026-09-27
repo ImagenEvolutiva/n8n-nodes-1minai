@@ -17,17 +17,17 @@ export const aiFeatureFields: INodeProperties[] = [
 			{
 				name: 'Structured',
 				value: 'structured',
-				description: 'Build the request from Feature Type, Model and a promptObject JSON.',
+				description: 'Build the request from Feature Type, Model and a promptObject JSON',
 			},
 			{
 				name: 'Raw JSON Body (Advanced)',
 				value: 'raw',
-				description: 'Send a complete JSON body to POST /api/features as-is.',
+				description: 'Send a complete JSON body to POST /api/features as-is',
 			},
 		],
 		default: 'structured',
 		displayOptions: { show: { resource: ['aiFeature'], operation: ['execute'] } },
-		description: 'How to build the request body.',
+		description: 'How to build the request body',
 	},
 	{
 		displayName: 'Feature Type',
@@ -52,7 +52,7 @@ export const aiFeatureFields: INodeProperties[] = [
 		displayOptions: {
 			show: { resource: ['aiFeature'], operation: ['execute'], inputMode: ['structured'] },
 		},
-		description: 'Model name to use for the feature, e.g. "magic-art" for image features.',
+		description: 'Model name to use for the feature, e.g. "magic-art" for image features',
 	},
 	{
 		displayName: 'Prompt Object (JSON)',
@@ -64,8 +64,7 @@ export const aiFeatureFields: INodeProperties[] = [
 		displayOptions: {
 			show: { resource: ['aiFeature'], operation: ['execute'], inputMode: ['structured'] },
 		},
-		description:
-			'Feature-specific parameters sent as "promptObject". Parameters vary by feature type, e.g. for image features: {"imageUrl": "<asset key or url>", "mode": "fast", "n": 4}. See the AI Feature API docs.',
+		description: 'Feature-specific parameters sent as "promptObject". Parameters vary by feature type, e.g. for image features: {"imageUrl": "&lt;asset key or URL&gt;", "mode": "fast", "n": 4}. See the AI Feature API docs.',
 	},
 	{
 		displayName: 'Run Async',
@@ -87,8 +86,7 @@ export const aiFeatureFields: INodeProperties[] = [
 		default:
 			'={\n  "type": "IMAGE_GENERATOR",\n  "model": "magic-art",\n  "promptObject": {\n    "prompt": "A mountain at sunset"\n  }\n}',
 		displayOptions: { show: { resource: ['aiFeature'], operation: ['execute'], inputMode: ['raw'] } },
-		description:
-			'Full request body sent to POST /api/features exactly as provided (pass "async": true inside for async execution).',
+		description: 'Full request body sent to POST /api/features exactly as provided (pass "async": true inside for async execution)',
 	},
 	{
 		displayName: 'Additional Fields',
@@ -112,7 +110,7 @@ export const aiFeatureFields: INodeProperties[] = [
 				type: 'number',
 				default: 2,
 				displayOptions: { show: { waitForCompletion: [true] } },
-				description: 'Seconds between polls of the Get Result endpoint.',
+				description: 'Seconds between polls of the Get Result endpoint',
 			},
 			{
 				displayName: 'Max Wait Time (Seconds)',

@@ -26,7 +26,6 @@ export const assetFields: INodeProperties[] = [
 		required: true,
 		default: 'data',
 		displayOptions: { show: { resource: ['asset'], operation: ['upload'] } },
-		description:
-			'Name of the binary property on the input item that contains the file to upload (produced by nodes like Read/Write Files from Disk or HTTP Request).',
+		description: 'Name of the binary property on the input item that contains the file to upload (produced by nodes like Read/Write Files from Disk or HTTP Request)',
 	},
 ];

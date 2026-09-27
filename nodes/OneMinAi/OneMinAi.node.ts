@@ -16,6 +16,7 @@ import { resultFields } from './descriptions/ResultDescription';
 import {
 	UNIFY_CHAT_TYPE,
 	asRecord,
+	buildMultipartFormData,
 	extractConversationUuid,
 	extractGeneratedText,
 	oneMinAiApiRequest,
@@ -288,7 +289,7 @@ async function executeAsset(
 	const buffer = await context.helpers.getBinaryDataBuffer(itemIndex, binaryPropertyName);
 	const response = await oneMinAiApiRequest.call(context, 'POST', '/api/assets', undefined, {
 		// Documented multipart field name: "asset" (Asset API).
-		formData: {
+		formData: buildMultipartFormData({
 			asset: {
 				value: buffer,
 				options: {
@@ -296,7 +297,7 @@ async function executeAsset(
 					contentType: item.mimeType ?? 'application/octet-stream',
 				},
 			},
-		},
+		}),
 	});
 
 	const extras: IDataObject = {};
@@ -351,7 +352,7 @@ const resourceField: INodeProperties = {
 		{ name: 'Asset', value: 'asset', description: 'Upload a binary file as an asset (experimental)' },
 		{ name: 'Chat', value: 'chat', description: 'Send a chat prompt' },
 		{ name: 'Conversation', value: 'conversation', description: 'Create a conversation for history' },
-		{ name: 'Result', value: 'result', description: 'Retrieve an AI record by its id' },
+		{ name: 'Result', value: 'result', description: 'Retrieve an AI record by its ID' },
 	],
 	default: 'chat',
 };

@@ -18,8 +18,7 @@ export const resultFields: INodeProperties[] = [
 		required: true,
 		default: '',
 		displayOptions: { show: { resource: ['result'], operation: ['get'] } },
-		description:
-			'The UUID of the AI record, e.g. from the "aiRecordUuid" output field of an async AI Feature request (the record uuid is the result id — there is no separate resultId field).',
+		description: 'The UUID of the AI record, e.g. from the "aiRecordUuid" output field of an async AI Feature request (the record uuid is the result ID — there is no separate resultId field)',
 	},
 	{
 		displayName: 'Additional Fields',
@@ -43,7 +42,7 @@ export const resultFields: INodeProperties[] = [
 				type: 'number',
 				default: 2,
 				displayOptions: { show: { waitForCompletion: [true] } },
-				description: 'Seconds between polls of the Get Result endpoint.',
+				description: 'Seconds between polls of the Get Result endpoint',
 			},
 			{
 				displayName: 'Max Wait Time (Seconds)',
