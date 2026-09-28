@@ -1,62 +1,67 @@
 {
-	"name": "n8n-nodes-1minai",
-	"version": "0.1.1",
-	"description": "n8n community node for the 1min.AI API — chat completions, conversations, AI features, and asset uploads.",
-	"license": "MIT",
-	"keywords": [
-		"n8n-community-node-package",
-		"n8n",
-		"1min.ai",
-		"1minai",
-		"ai",
-		"llm",
-		"openai",
-		"gemini",
-		"claude",
-		"automation"
-	],
-	"author": {
-		"name": "Jose Bermudez",
-		"email": "ie_oss@imagenevolutiva.mx",
-		"url": "https://github.com/ImagenEvolutiva/n8n-nodes-1minai"
-	},
-	"homepage": "https://github.com/ImagenEvolutiva/n8n-nodes-1minai#readme",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/ImagenEvolutiva/n8n-nodes-1minai.git"
-	},
-	"files": [
-		"dist",
-		"CHANGELOG.md"
-	],
-	"scripts": {
-		"build": "n8n-node build",
-		"build:watch": "tsc --watch",
-		"dev": "n8n-node dev",
-		"lint": "n8n-node lint",
-		"lint:fix": "n8n-node lint --fix",
-		"release": "n8n-node release",
-		"prepublishOnly": "n8n-node prerelease",
-		"test": "node scripts/smoke-test.mjs"
-	},
-	"n8n": {
-		"n8nNodesApiVersion": 1,
-		"strict": true,
-		"credentials": [
-			"dist/credentials/OneMinAiApi.credentials.js"
-		],
-		"nodes": [
-			"dist/nodes/OneMinAi/OneMinAi.node.js"
-		]
-	},
-	"devDependencies": {
-		"@n8n/node-cli": "*",
-		"eslint": "9.39.4",
-		"prettier": "3.8.3",
-		"release-it": "20.2.0",
-		"typescript": "5.9.3"
-	},
-	"peerDependencies": {
-		"n8n-workflow": "*"
-	}
+  "name": "n8n-nodes-1minai",
+  "version": "0.1.1",
+  "description": "n8n community node for the 1min.AI API — chat completions, conversations, AI features, and asset uploads.",
+  "license": "MIT",
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n",
+    "1min.ai",
+    "1minai",
+    "ai",
+    "llm",
+    "openai",
+    "gemini",
+    "claude",
+    "automation"
+  ],
+  "author": {
+    "name": "Jose Bermudez",
+    "email": "ie_oss@imagenevolutiva.mx",
+    "url": "https://github.com/ImagenEvolutiva/n8n-nodes-1minai"
+  },
+  "homepage": "https://github.com/ImagenEvolutiva/n8n-nodes-1minai#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ImagenEvolutiva/n8n-nodes-1minai.git"
+  },
+  "files": [
+    "dist",
+    "CHANGELOG.md",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
+  "scripts": {
+    "build": "n8n-node build",
+    "build:watch": "tsc --watch",
+    "dev": "n8n-node dev",
+    "lint": "n8n-node lint",
+    "lint:fix": "n8n-node lint --fix",
+    "release": "n8n-node release",
+    "prepublishOnly": "n8n-node prerelease",
+    "test": "node scripts/smoke-test.mjs"
+  },
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "strict": true,
+    "credentials": [
+      "dist/credentials/OneMinAiApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/OneMinAi/OneMinAi.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@n8n/node-cli": "*",
+    "eslint": "9.39.4",
+    "prettier": "3.8.3",
+    "release-it": "20.2.0",
+    "typescript": "5.9.3"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
 }
