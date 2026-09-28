@@ -22,7 +22,7 @@
 # Option A — OIDC Trusted Publishing (RECOMMENDED, no long-lived secrets):
 #   Since the package is not yet on npm, pre-register it first:
 #   1. Log in to npmjs.com → avatar → "Add a new package".
-#   2. Enter the package name: n8n-nodes-1minai
+#   2. Enter the package name: @imagenevolutiva/n8n-nodes-1minai
 #   3. Under "Publishing access", choose "Trusted Publisher" → GitHub Actions:
 #        Repository owner:  ImagenEvolutiva
 #        Repository name:   n8n-nodes-1minai

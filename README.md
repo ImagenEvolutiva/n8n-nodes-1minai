@@ -1,4 +1,4 @@
-# n8n-nodes-1minai
+# @imagenevolutiva/n8n-nodes-1minai
 
 n8n community node for the [1min.AI API](https://docs.1min.ai/docs/api/intro) — chat completions, conversations, AI features, asset uploads, and result retrieval.
 
@@ -38,7 +38,7 @@ ONEMIN_API_KEY=your-key npm run test          # additionally runs Tier 2 (live h
 
 1. In n8n: **Settings → Community nodes**.
 2. Select **Install a community node**.
-3. Enter the npm package name: `n8n-nodes-1minai`.
+3. Enter the npm package name: `@imagenevolutiva/n8n-nodes-1minai`.
 4. Agree to the risks and confirm.
 
 On n8n Cloud only **verified** community packages can be installed by end users; self-hosted instances can install any community package. See the [n8n community nodes docs](https://docs.n8n.io/integrations/community-nodes/installation-and-management/gui-installation).
@@ -47,10 +47,10 @@ On n8n Cloud only **verified** community packages can be installed by end users;
 
 ```bash
 # n8n installed via npm:
-n8n install-node n8n-nodes-1minai
+n8n install-node @imagenevolutiva/n8n-nodes-1minai
 
 # Docker:
-docker exec -it <container> n8n install-node n8n-nodes-1minai
+docker exec -it <container> n8n install-node @imagenevolutiva/n8n-nodes-1minai
 ```
 
 ### Local dev install (packed tarball)
@@ -58,11 +58,11 @@ docker exec -it <container> n8n install-node n8n-nodes-1minai
 ```bash
 npm run build
 npm pack
-# produces n8n-nodes-1minai-0.1.0.tgz
+# produces @imagenevolutiva/n8n-nodes-1minai-0.1.0.tgz
 mkdir -p ~/.n8n/custom
 cd ~/.n8n/custom
 npm init -y        # only if no package.json exists there yet
-npm install /path/to/n8n-nodes-1minai-0.1.0.tgz
+npm install /path/to/@imagenevolutiva/n8n-nodes-1minai-0.1.0.tgz
 # restart n8n — "1min.AI" appears in the nodes panel
 ```
 
@@ -75,7 +75,7 @@ npm run build && npm link
 # in ~/.n8n/custom:
 mkdir -p ~/.n8n/custom && cd ~/.n8n/custom
 npm init -y        # only if no package.json exists there yet
-npm link n8n-nodes-1minai
+npm link @imagenevolutiva/n8n-nodes-1minai
 # restart n8n
 ```
 
@@ -159,7 +159,7 @@ npm run build       # produces dist/
 npm pack            # inspect tarball before installing
 mkdir -p ~/.n8n/custom && cd ~/.n8n/custom
 npm init -y         # only if no package.json exists there yet
-npm install /path/to/n8n-nodes-1minai-0.1.0.tgz
+npm install /path/to/@imagenevolutiva/n8n-nodes-1minai-0.1.0.tgz
 # restart n8n and verify:
 #   "1min.AI" appears in the nodes panel
 #   credential "1min.AI API" accepts key + Test button succeeds

@@ -1,5 +1,5 @@
 {
-  "name": "n8n-nodes-1minai",
+  "name": "@imagenevolutiva/n8n-nodes-1minai",
   "version": "0.1.2",
   "description": "n8n community node for the 1min.AI API — chat completions, conversations, AI features, and asset uploads.",
   "license": "MIT",
