@@ -19,24 +19,30 @@
 #
 # ─── ONE-TIME SETUP ────────────────────────────────────────────────────────────
 #
-# Option A — OIDC Trusted Publishing (recommended, no long-lived secrets):
-#   1. Log in to npmjs.com and open your package's settings.
-#   2. Under "Publish access" → "Trusted Publishers", click "Add a publisher".
-#   3. Select GitHub Actions and fill in:
-#        Repository owner: <your-github-username-or-org>
-#        Repository name:  <your-repo-name>
-#        Workflow name:    publish.yml
-#        Environment:      (leave blank unless you use GitHub Environments)
-#   4. Leave the NPM_TOKEN secret unset in this repository. GitHub's OIDC
-#      token is used instead — no secret ever touches your repo settings.
+# Option A — OIDC Trusted Publishing (RECOMMENDED, no long-lived secrets):
+#   Since the package is not yet on npm, pre-register it first:
+#   1. Log in to npmjs.com → avatar → "Add a new package".
+#   2. Enter the package name: n8n-nodes-1minai
+#   3. Under "Publishing access", choose "Trusted Publisher" → GitHub Actions:
+#        Repository owner:  ImagenEvolutiva
+#        Repository name:   n8n-nodes-1minai
+#        Workflow filename: publish.yml
+#        Environment:       (leave blank)
+#   4. IMPORTANT: delete the NPM_TOKEN secret from this repo
+#      (Settings → Secrets and variables → Actions). If a token is present it
+#      takes precedence over OIDC and npm will reject it (EOTP) — the token
+#      step below is skipped automatically when the secret is unset.
 #
-# Option B — npm Automation Token (fallback):
-#   1. On npmjs.com: Access Tokens → Generate New Token → Granular Access Token.
-#      Scope it to this package with "Read and write" publish permission.
-#   2. In GitHub: Settings → Secrets and variables → Actions → New secret.
-#      Name it NPM_TOKEN and paste the token value.
+# Option B — Classic Automation token (fallback if you must use a token):
+#   ⚠ npm policy (July 31, 2026): GRANULAR tokens configured to bypass 2FA are
+#   BLOCKED from publishing — npm rejects them with EOTP in CI. Do NOT use a
+#   granular token here. Use a CLASSIC token instead:
+#   1. npmjs.com → Access Tokens → Generate New Token → Classic Token.
+#   2. Select type "Automation" (bypasses 2FA, intended for CI publishing).
+#   3. GitHub: Settings → Secrets and variables → Actions → NPM_TOKEN → update
+#      the value.
 #
-# Both options work with --provenance. Provenance is signed by GitHub's OIDC
+# Both options work with provenance. Provenance is signed by GitHub's OIDC
 # infrastructure regardless of how npm authentication is handled.
 #
 # ─── TAG CONVENTION ────────────────────────────────────────────────────────────
@@ -78,9 +84,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up Node.js
+        # Node 24 ships npm 11.x, which is required for npm Trusted Publishing
+        # (OIDC-based auth, no token). npm < 11.5.1 cannot exchange OIDC tokens
+        # for publish auth and would fall back to asking for a secret token.
         uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
+          node-version: '24'
           cache: 'npm'
 
       - name: Install dependencies
