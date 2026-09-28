@@ -152,18 +152,23 @@ Or in structured mode: set Feature Type, Model, Prompt Object JSON — and optio
 
 ## Publishing to npm (checklist)
 
-1. Set your real `author`, `repository`, and `homepage` in `package.json` (currently placeholder values).
-2. `npm run lint && npm run build` — both must be green.
-3. `npm pack` and inspect: `tar -tzf n8n-nodes-1minai-0.1.0.tgz` — should contain `dist/`, README, LICENSE, CHANGELOG.
-4. `npm login`, then `npm publish` (the `prepublishOnly` script runs `n8n-node prerelease` first).
-5. Install into a fresh n8n via **Settings → Community nodes** and smoke-test each resource.
+> **Since May 1, 2026**, n8n requires community nodes submitted for verification to be published via GitHub Actions with an npm provenance statement — direct local `npm publish` is no longer accepted for verification. This repo ships the official workflow at `.github/workflows/publish.yml`.
+
+1. Set your real `author`, `repository`, and `homepage` in `package.json` (currently placeholder values pointing at `github.com/1min-ai/n8n-nodes-1minai`).
+2. Push this repo to that GitHub repository (the workflow publishes from version tags).
+3. One-time npm setup: on npmjs.com → your package → **Publish access → Trusted Publishers → Add a publisher → GitHub Actions** (owner, repo name, workflow name `publish.yml`), or set the `NPM_TOKEN` secret in the repo (Option B in the workflow comments).
+4. `npm run lint && npm run build && npm test` — all green locally.
+5. `npm run release` (interactive: bumps version, commits, tags, pushes) — the tag push triggers `publish.yml`, which publishes to npm **with provenance**.
+6. Verify: `npx @n8n/scan-community-package n8n-nodes-1minai` must pass (n8n's automated gate).
 
 ## Submitting to n8n community nodes (checklist)
 
-1. Package published on npm with the `n8n-community-node-package` keyword (already set).
-2. PR to the [n8n docs repo](https://github.com/n8n-io/n8n-docs) adding the package to the community nodes list, per the [submission requirements](https://docs.n8n.io/integrations/community-nodes/submitting-nodes/).
-3. For review readiness: lint 0 errors, MIT LICENSE, README with install/credentials/examples, CHANGELOG, public repo URL in package.json.
-4. After verification, Cloud users can install it via the GUI.
+1. Package on npm published via GitHub Actions with a provenance attestation (see checklist above).
+2. Confirm technical guidelines: zero runtime dependencies ✓ (`dependencies: {}`), no console/env/fs access in `nodes/`/`credentials/` ✓, MIT LICENSE ✓, English-only copy ✓, `npm run lint` green ✓.
+3. Confirm UX guidelines: Title Case display names ✓, sentence-case descriptions ✓, boolean descriptions start with "Whether…" ✓, "e.g." placeholders ✓, Simplify parameter on large-output resources ✓.
+4. Documentation: README with install/credentials/examples/limitations ✓ (shipped), API docs linked in the credential ✓.
+5. Submit via the [n8n Creator Portal](https://creators.n8n.io/nodes) — n8n fetches the package from npm, runs the scanner, fetches the attested source from GitHub, and vets UX.
+6. After verification, the node is discoverable in the n8n nodes panel across self-hosted and Cloud.
 
 ## Local testing in n8n (checklist)
 

@@ -16,9 +16,9 @@ export const conversationFields: INodeProperties[] = [
 		type: 'string',
 		required: true,
 		default: '',
-		placeholder: 'My AI Conversation',
+		placeholder: 'e.g. My AI Conversation',
 		displayOptions: { show: { resource: ['conversation'], operation: ['create'] } },
-		description: 'Human-readable title of the conversation',
+		description: 'Human-readable title of the conversation, e.g. "Weekly report draft"',
 	},
 	{
 		displayName: 'Model',

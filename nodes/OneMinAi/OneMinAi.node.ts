@@ -39,14 +39,33 @@ function recordStringField(record: IDataObject | undefined, field: string): stri
 	return typeof value === 'string' && value.trim() !== '' ? value : undefined;
 }
 
-/** Builds the output item: convenience fields first, then the full raw API response. */
+/**
+ * Builds the output item: convenience fields first, then the full raw API response.
+ * With simplify enabled, returns only the convenience fields plus a few key record
+ * fields (UX guideline: endpoints with large responses must offer a simplified output).
+ */
 function buildOutput(
 	response: IDataObject,
 	extras: IDataObject,
 	itemIndex: number,
+	simplify = false,
 ): INodeExecutionData {
+	if (!simplify) {
+		return {
+			json: { ...extras, ...response },
+			pairedItem: { item: itemIndex },
+		};
+	}
+	const simplified: IDataObject = { ...extras };
+	const record = findAiRecord(response);
+	for (const key of ['uuid', 'status', 'type', 'model', 'conversation']) {
+		const value = record?.[key];
+		if (typeof value === 'string' && value.trim() !== '') {
+			simplified[key === 'uuid' ? 'aiRecordUuid' : key] = value;
+		}
+	}
 	return {
-		json: { ...extras, ...response },
+		json: simplified,
 		pairedItem: { item: itemIndex },
 	};
 }
@@ -175,7 +194,8 @@ async function executeChat(
 	if (aiRecordUuid !== undefined) {
 		extras.aiRecordUuid = aiRecordUuid;
 	}
-	return [buildOutput(response, extras, itemIndex)];
+	const simplify = context.getNodeParameter('simplify', itemIndex, false) === true;
+	return [buildOutput(response, extras, itemIndex, simplify)];
 }
 
 async function executeConversation(
@@ -270,7 +290,8 @@ async function executeAiFeature(
 	if (finalStatus !== undefined) {
 		extras.status = finalStatus;
 	}
-	return [buildOutput(finalResponse, extras, itemIndex)];
+	const simplify = context.getNodeParameter('simplify', itemIndex, false) === true;
+	return [buildOutput(finalResponse, extras, itemIndex, simplify)];
 }
 
 async function executeAsset(
@@ -342,7 +363,8 @@ async function executeResult(
 	if (status !== undefined) {
 		extras.status = status;
 	}
-	return [buildOutput(response, extras, itemIndex)];
+	const simplify = context.getNodeParameter('simplify', itemIndex, false) === true;
+	return [buildOutput(response, extras, itemIndex, simplify)];
 }
 
 const resourceField: INodeProperties = {

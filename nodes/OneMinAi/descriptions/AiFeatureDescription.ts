@@ -89,6 +89,14 @@ export const aiFeatureFields: INodeProperties[] = [
 		description: 'Full request body sent to POST /api/features exactly as provided (pass "async": true inside for async execution)',
 	},
 	{
+	displayName: 'Simplify',
+	name: 'simplify',
+	type: 'boolean',
+	default: false,
+		displayOptions: { show: { resource: ['aiFeature'], operation: ['execute'] } },
+		description: 'Whether to return a simplified version of the response instead of the raw data',
+		},
+		{
 		displayName: 'Additional Fields',
 		name: 'additionalFields',
 		type: 'collection',

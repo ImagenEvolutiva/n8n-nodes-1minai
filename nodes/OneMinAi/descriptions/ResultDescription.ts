@@ -21,6 +21,14 @@ export const resultFields: INodeProperties[] = [
 		description: 'The UUID of the AI record, e.g. from the "aiRecordUuid" output field of an async AI Feature request (the record uuid is the result ID — there is no separate resultId field)',
 	},
 	{
+	displayName: 'Simplify',
+	name: 'simplify',
+	type: 'boolean',
+	default: false,
+		displayOptions: { show: { resource: ['result'], operation: ['get'] } },
+		description: 'Whether to return a simplified version of the response instead of the raw data',
+		},
+		{
 		displayName: 'Additional Fields',
 		name: 'additionalFields',
 		type: 'collection',

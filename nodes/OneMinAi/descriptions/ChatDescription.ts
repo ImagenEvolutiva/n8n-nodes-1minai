@@ -74,6 +74,14 @@ export const chatFields: INodeProperties[] = [
 			'Full request body sent to POST /api/chat-with-ai. If "type" is missing, UNIFY_CHAT_WITH_AI is injected. Everything else is sent exactly as provided — see the endpoint docs for promptObject, settings, attachments, brandVoiceId and metadata.',
 	},
 	{
+	displayName: 'Simplify',
+	name: 'simplify',
+	type: 'boolean',
+	default: false,
+		displayOptions: { show: { resource: ['chat'], operation: ['send'] } },
+		description: 'Whether to return a simplified version of the response instead of the raw data',
+		},
+		{
 		displayName: 'Additional Fields',
 		name: 'additionalFields',
 		type: 'collection',
