@@ -22,8 +22,8 @@ export class OneMinAiApi implements ICredentialType {
 	displayName = '1min.AI API';
 
 	icon: Icon = {
-		light: 'file:../icons/oneminai.svg',
-		dark: 'file:../icons/oneminai.svg',
+		light: 'file:../nodes/OneMinAi/oneminai.svg',
+		dark: 'file:../nodes/OneMinAi/oneminai.svg',
 	};
 
 	documentationUrl = 'https://docs.1min.ai/docs/api/create-api-key';

@@ -17,6 +17,7 @@
 	],
 	"author": {
 		"name": "1min.AI n8n community node contributors",
+		"email": "agent@friday.ai",
 		"url": "https://github.com/1min-ai/n8n-nodes-1minai"
 	},
 	"homepage": "https://github.com/1min-ai/n8n-nodes-1minai#readme",
@@ -25,7 +26,8 @@
 		"url": "https://github.com/1min-ai/n8n-nodes-1minai.git"
 	},
 	"files": [
-		"dist"
+		"dist",
+		"CHANGELOG.md"
 	],
 	"scripts": {
 		"build": "n8n-node build",
@@ -40,7 +42,7 @@
 		"n8nNodesApiVersion": 1,
 		"strict": true,
 		"credentials": [
-			"dist/credentials/1minAiApi.credentials.js"
+			"dist/credentials/OneMinAiApi.credentials.js"
 		],
 		"nodes": [
 			"dist/nodes/OneMinAi/OneMinAi.node.js"

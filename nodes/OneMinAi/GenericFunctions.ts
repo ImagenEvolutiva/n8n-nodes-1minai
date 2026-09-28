@@ -1,4 +1,3 @@
-import FormData from 'form-data';
 import { NodeApiError, NodeOperationError } from 'n8n-workflow';
 import type {
 	IDataObject,
@@ -49,7 +48,7 @@ export function buildAuthHeaders(
 	options: { includeJsonContentType?: boolean } = {},
 ): Record<string, string> {
 	const headers: Record<string, string> = {};
-	if (options.includeJsonContentType !== false) {
+	if (options.includeJsonContentType) {
 		headers['Content-Type'] = 'application/json';
 	}
 	if (credentials.authStyle === 'bearer') {
@@ -113,27 +112,58 @@ export function enrichApiError(node: INode, error: unknown): Error {
 	return new Error(`1min.AI request failed: ${String(error)}`);
 }
 
-/** A single multipart field: either a plain string or a file with filename/content type. */
+/** A single multipart field: either a plain string value or a file part. */
 export interface MultipartField {
-	value: Buffer | string;
-	options?: { filename?: string; contentType?: string };
+	name: string;
+	value: string | Buffer;
+	filename?: string;
+	contentType?: string;
 }
 
 /**
- * Builds a multipart/form-data body for the Asset API (documented field name: `asset`).
- * Uses the `form-data` package because n8n's httpRequest derives the multipart boundary
- * headers from a FormData instance in the request body.
+ * A ready-to-send multipart/form-data body: the framed payload plus the exact
+ * Content-Type header value (including the boundary) that must accompany it.
  */
-export function buildMultipartFormData(fields: Record<string, MultipartField | string>): FormData {
-	const formData = new FormData();
-	for (const [name, field] of Object.entries(fields)) {
-		if (typeof field === 'string') {
-			formData.append(name, field);
-		} else {
-			formData.append(name, field.value, field.options ?? {});
-		}
+export interface MultipartBody {
+	buffer: Buffer;
+	contentType: string;
+}
+
+/** Generates a MIME boundary; the alphanumeric prefix makes collision with content unlikely. */
+function generateBoundary(): string {
+	let boundary = '----n8n1minai';
+	for (let i = 0; i < 24; i++) {
+		boundary += Math.floor(Math.random() * 16).toString(16);
 	}
-	return formData;
+	return boundary;
+}
+
+/**
+ * Frames a multipart/form-data body by hand (Asset API, documented field `asset`).
+ *
+ * Done manually because n8n Cloud forbids importing the `form-data` package, and the
+ * spec-built-in FormData lacks methods n8n's request pipeline expects. A raw Buffer body
+ * plus an explicit `multipart/form-data; boundary=...` header flows cleanly through
+ * n8n's underlying axios layer.
+ */
+export function buildMultipartBody(fields: MultipartField[]): MultipartBody {
+	const boundary = generateBoundary();
+	const chunks: Buffer[] = [];
+	for (const field of fields) {
+		const disposition = `form-data; name="${field.name}"${
+			field.filename !== undefined ? `; filename="${field.filename}"` : ''
+		}`;
+		const partHeaders =
+			`--${boundary}\r\n` +
+			`Content-Disposition: ${disposition}\r\n` +
+			(field.contentType !== undefined ? `Content-Type: ${field.contentType}\r\n` : '') +
+			'\r\n';
+		chunks.push(Buffer.from(partHeaders, 'utf8'));
+		chunks.push(typeof field.value === 'string' ? Buffer.from(field.value, 'utf8') : field.value);
+		chunks.push(Buffer.from('\r\n', 'utf8'));
+	}
+	chunks.push(Buffer.from(`--${boundary}--\r\n`, 'utf8'));
+	return { buffer: Buffer.concat(chunks), contentType: `multipart/form-data; boundary=${boundary}` };
 }
 
 /**
@@ -149,23 +179,27 @@ export async function oneMinAiApiRequest(
 	method: ApiMethod,
 	endpoint: string,
 	body?: IDataObject,
-	extra: { formData?: FormData; headers?: Record<string, string> } = {},
+	multipart?: MultipartBody,
 ): Promise<IDataObject> {
 	const credentials = await getCredentialsOrThrow(this);
+
+	const headers = buildAuthHeaders(credentials, {
+		includeJsonContentType: multipart === undefined && body !== undefined,
+	});
+	if (multipart !== undefined) {
+		// The boundary must travel in the header; axios does not derive it from a raw Buffer.
+		headers['Content-Type'] = multipart.contentType;
+	}
 
 	const requestOptions: IHttpRequestOptions = {
 		method,
 		url: `${normalizeBaseUrl(credentials.baseUrl)}${endpoint}`,
-		headers: {
-			...buildAuthHeaders(credentials, { includeJsonContentType: extra.formData === undefined }),
-			...(extra.headers ?? {}),
-		},
+		headers,
 	};
 
-	if (extra.formData !== undefined) {
-		// Multipart upload (Asset API). n8n copies the multipart headers (including the
-		// boundary) from the FormData instance itself, so no Content-Type header is set here.
-		requestOptions.body = extra.formData;
+	if (multipart !== undefined) {
+		// Multipart upload (Asset API): pre-framed body, boundary declared in Content-Type.
+		requestOptions.body = multipart.buffer;
 	} else if (body !== undefined) {
 		requestOptions.body = body;
 	}
@@ -258,7 +292,9 @@ export function extractGeneratedText(responseData: unknown): ExtractedText {
 	const nestedData = asRecord(root.data);
 	const aiRecord = asRecord(root.aiRecord) ?? asRecord(nestedData?.aiRecord);
 	const detail =
-		asRecord(aiRecord?.aiRecordDetail) ?? asRecord(nestedData?.aiRecordDetail) ?? asRecord(root.aiRecordDetail);
+		asRecord(aiRecord?.aiRecordDetail) ??
+		asRecord(nestedData?.aiRecordDetail) ??
+		asRecord(root.aiRecordDetail);
 
 	if (detail && Array.isArray(detail.resultObject)) {
 		const parts = (detail.resultObject as unknown[])

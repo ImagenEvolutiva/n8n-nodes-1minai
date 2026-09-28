@@ -1,4 +1,4 @@
-import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
+import { NodeConnectionTypes, NodeOperationError, sleep } from 'n8n-workflow';
 import type {
 	IDataObject,
 	IExecuteFunctions,
@@ -16,7 +16,8 @@ import { resultFields } from './descriptions/ResultDescription';
 import {
 	UNIFY_CHAT_TYPE,
 	asRecord,
-	buildMultipartFormData,
+	buildMultipartBody,
+	enrichApiError,
 	extractConversationUuid,
 	extractGeneratedText,
 	oneMinAiApiRequest,
@@ -48,10 +49,6 @@ function buildOutput(
 		json: { ...extras, ...response },
 		pairedItem: { item: itemIndex },
 	};
-}
-
-function sleep(ms: number): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
@@ -287,18 +284,24 @@ async function executeAsset(
 	const item = context.helpers.assertBinaryData(itemIndex, binaryPropertyName);
 
 	const buffer = await context.helpers.getBinaryDataBuffer(itemIndex, binaryPropertyName);
-	const response = await oneMinAiApiRequest.call(context, 'POST', '/api/assets', undefined, {
-		// Documented multipart field name: "asset" (Asset API).
-		formData: buildMultipartFormData({
-			asset: {
-				value: buffer,
-				options: {
-					filename: item.fileName ?? 'upload',
-					contentType: item.mimeType ?? 'application/octet-stream',
-				},
-			},
-		}),
-	});
+	// Documented multipart field name: "asset" (Asset API). The body is framed by hand in
+	// GenericFunctions (n8n Cloud forbids the form-data package); the boundary travels in
+	// the Content-Type header set inside oneMinAiApiRequest.
+	const multipart = buildMultipartBody([
+		{
+			name: 'Asset',
+			value: buffer,
+			filename: item.fileName ?? 'upload',
+			contentType: item.mimeType ?? 'application/octet-stream',
+		},
+	]);
+	const response = await oneMinAiApiRequest.call(
+		context,
+		'POST',
+		'/api/assets',
+		undefined,
+		multipart,
+	);
 
 	const extras: IDataObject = {};
 	const asset = asRecord(response.asset);
@@ -368,11 +371,11 @@ const operationField: INodeProperties = {
 		},
 	},
 	options: [
-		{ name: 'Execute', value: 'execute', action: 'Execute an AI feature' },
-		{ name: 'Upload', value: 'upload', action: 'Upload an asset' },
-		{ name: 'Send Prompt', value: 'send', action: 'Send a chat prompt' },
 		{ name: 'Create', value: 'create', action: 'Create a conversation' },
+		{ name: 'Execute', value: 'execute', action: 'Execute an AI feature' },
 		{ name: 'Get', value: 'get', action: 'Get a result' },
+		{ name: 'Send Prompt', value: 'send', action: 'Send a chat prompt' },
+		{ name: 'Upload', value: 'upload', action: 'Upload an asset' },
 	],
 	default: 'send',
 };
@@ -436,17 +439,19 @@ export class OneMinAi implements INodeType {
 				}
 				returnData.push(...executed);
 			} catch (error) {
-				// Honor the node's "Continue On Fail" setting; errors already carry the
-				// 1min.AI error message via enrichApiError in GenericFunctions.
+				// Honor the node's "Continue On Fail" setting. enrichApiError passes NodeApiError /
+				// NodeOperationError through unchanged and wraps anything raw, so the 1min.AI error
+				// body reaches the n8n error UI in both cases.
 				if (this.continueOnFail()) {
-					const message = error instanceof Error ? error.message : String(error);
+					const wrapped = enrichApiError(this.getNode(), error);
+					const message = wrapped instanceof Error ? wrapped.message : String(wrapped);
 					returnData.push({
 						json: { error: message },
 						pairedItem: { item: itemIndex },
 					});
 					continue;
 				}
-				throw error;
+				throw enrichApiError(this.getNode(), error);
 			}
 		}
 
