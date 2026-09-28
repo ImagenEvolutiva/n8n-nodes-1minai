@@ -19,6 +19,19 @@ n8n community node for the [1min.AI API](https://docs.1min.ai/docs/api/intro) �
 - A 1min.AI API key (create one at app.1min.ai → Settings → API Keys).
 - Node.js 18+ for development.
 
+## Testing
+
+The package ships a three-tier smoke test that exercises the real compiled code:
+
+```bash
+npm run test                                  # Tier 0 (offline helpers) + Tier 1 (live 401 probe)
+ONEMIN_API_KEY=your-key npm run test          # additionally runs Tier 2 (live happy path)
+```
+
+- **Tier 0** — offline: validates auth headers, multipart framing, response extraction, and error wrapping against the shapes documented at docs.1min.ai. No network needed.
+- **Tier 1** — live: calls `GET /api/results/{uuid}` with an intentionally invalid key and asserts the API returns 401, then feeds the real error body through the node's `enrichApiError()` so you can see exactly what an n8n user would see. Always safe to run.
+- **Tier 2** — live: with a real key, creates a conversation, chats inside it (`PONG` round-trip), looks up the history, and uploads a test asset. Note: creates one real conversation + one AI request (billable) per run.
+
 ## Installation
 
 ### From n8n community nodes (after npm publish)
